@@ -1,9 +1,11 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
-// Create a custom axios instance
+const API_BASE_URL =
+  Platform.OS === 'web'
+    ? process.env.EXPO_PUBLIC_API_URL_WEB
+    : process.env.EXPO_PUBLIC_API_URL_MOBILE;
 const axiosJWT = axios.create();
 
 // Add a request interceptor to include the access token in the headers
@@ -67,3 +69,5 @@ export const getDriverAndVehicleByUserId = async (userId) => {
   );
   return response.data;
 };
+
+export { axiosJWT, API_BASE_URL };

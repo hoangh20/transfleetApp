@@ -16,12 +16,11 @@ const LoginScreen = () => {
   const handleLogin = async () => {
     try {
       const data = await signinUser({ email, password });
-      
       const accessToken = data?.access_token;
-  
+
       if (accessToken) {
         await AsyncStorage.setItem('access_token', accessToken);
-  
+
         try {
           const decoded = jwtDecode(accessToken);
           await AsyncStorage.setItem('user', JSON.stringify(decoded));
@@ -87,6 +86,16 @@ const LoginScreen = () => {
           onChangeText={setPassword}
           secureTextEntry={!showPassword}
         />
+        <TouchableOpacity
+          style={styles.eyeIcon}
+          onPress={() => setShowPassword(!showPassword)}
+        >
+          <Ionicons
+            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+            size={20}
+            color="#0047AB"
+          />
+        </TouchableOpacity>
       </View>
 
       <View style={[styles.rememberContainer, styles.marginHorizontal]}>

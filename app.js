@@ -1,8 +1,10 @@
-// filepath: d:\TransFleet\transfleetApp\app.js
 import 'expo-router/entry';
 import React from 'react';
 import AppNavigator from '@/navigation/AppNavigator';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 export default function App() {
-  return <AppNavigator />;
+  return 
+  <SafeAreaView style={{ flex: 1 }} edges={['top', 'left', 'right']}>
+    <AppNavigator />;
+  </SafeAreaView>;
 }

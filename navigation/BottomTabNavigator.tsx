@@ -14,7 +14,7 @@ const BottomTabNavigator = () => {
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
-          if (route.name === 'Home') {
+          if (route.name === 'HomeTab') {
             iconName = 'home-outline';
           } else if (route.name === 'Profile') {
             iconName = 'person-outline';
@@ -30,9 +30,9 @@ const BottomTabNavigator = () => {
         inactiveTintColor: 'gray',
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen  options={{ headerShown: false }} name="Profile" component={ProfileScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen options={{ headerShown: false }} name="HomeTab" component={HomeScreen} />
+      <Tab.Screen options={{ headerShown: false }} name="Profile" component={ProfileScreen} />
+      <Tab.Screen options={{ headerShown: false }} name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 };
