@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { axiosJWT, API_BASE_URL } from './user';
-
 export const getCurrentOrdersByUserId = async (userId, filter) => {
   const response = await axiosJWT.get(
     `${API_BASE_URL}/app/driver-orders/${userId}?filter=${filter}`
@@ -44,4 +43,30 @@ export const updatePackingOrderStatus = async (orderId, userId, imgUrl, note) =>
     { userId, imgUrl, note }
   );
   return response.data;
+};
+
+export const updateCombinedOrderStatus = async (connectionId, userId, imgUrl, note) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/orders/update-combination-status/${connectionId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId,
+        imgUrl,
+        note,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update combined order status');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating combined order status:', error);
+    throw error;
+  }
 };

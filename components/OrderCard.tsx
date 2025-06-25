@@ -22,13 +22,13 @@ import {
   fetchWardName,
   updateDeliveryOrderStatus,
   updatePackingOrderStatus,
-} from '@/services/oder';
+} from '@/services/order';
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
 const OrderCard = ({ order }) => {
   const [customerName, setCustomerName] = useState('');
-  const [loadingCustomer, setLoadingCustomer] = useState(true);
+  const [loadingCustomer, setLoadingCustomer] = useState(false); 
   const [startAddress, setStartAddress] = useState('');
   const [endAddress, setEndAddress] = useState('');
   const [loadingAddress, setLoadingAddress] = useState(true);
@@ -39,35 +39,48 @@ const OrderCard = ({ order }) => {
 
 
   useEffect(() => {
-    const fetchCustomerName = async () => {
-      try {
-        const customer = await getCustomerById(order.order.customer);
-        setCustomerName(customer.shortName || 'N/A');
-      } catch (error) {
-        console.error('Failed to fetch customer name:', error);
-        setCustomerName('N/A');
-      } finally {
-        setLoadingCustomer(false);
-      }
-    };
+    if (typeof order.order.customer === 'object' && order.order.customer.shortName) {
+      setCustomerName(order.order.customer.shortName);
+    } else {
+      setCustomerName('N/A');
+    }
 
     const fetchAddress = async () => {
       try {
         const { startPoint, endPoint } = order.order.location;
+        
         const startProvince = await fetchProvinceName(startPoint.provinceCode);
         const startDistrict = await fetchDistrictName(startPoint.districtCode);
         const startWard = startPoint.wardCode
           ? await fetchWardName(startPoint.wardCode)
           : '';
-        const startFullAddress = `${startWard ? `${startWard}, ` : ''}${startDistrict}, ${startProvince}`;
+        
+        let startFullAddress = '';
+        if (startPoint.locationText) {
+          startFullAddress = startPoint.locationText;
+          if (startWard || startDistrict || startProvince) {
+            startFullAddress += ', ';
+          }
+        }
+        startFullAddress += `${startWard ? `${startWard}, ` : ''}${startDistrict}, ${startProvince}`;
         setStartAddress(startFullAddress);
+
         const endProvince = await fetchProvinceName(endPoint.provinceCode);
         const endDistrict = await fetchDistrictName(endPoint.districtCode);
         const endWard = endPoint.wardCode
           ? await fetchWardName(endPoint.wardCode)
           : '';
-        const endFullAddress = `${endWard ? `${endWard}, ` : ''}${endDistrict}, ${endProvince}`;
+        
+        let endFullAddress = '';
+        if (endPoint.locationText) {
+          endFullAddress = endPoint.locationText;
+          if (endWard || endDistrict || endProvince) {
+            endFullAddress += ', ';
+          }
+        }
+        endFullAddress += `${endWard ? `${endWard}, ` : ''}${endDistrict}, ${endProvince}`;
         setEndAddress(endFullAddress);
+        
       } catch (error) {
         console.error('Failed to fetch address:', error);
         setStartAddress('N/A');
@@ -77,11 +90,10 @@ const OrderCard = ({ order }) => {
       }
     };
 
-    fetchCustomerName();
     fetchAddress();
   }, [order.order.customer, order.order.location]);
 
-  const isDeliveryOrder = order.type === 'DeliveryOrder';
+  const isDeliveryOrder = order.type === 'delivery';
   const statusText = getStatusText(order.order.status, isDeliveryOrder);
   const statusColor = getStatusColor(order.order.status, isDeliveryOrder);
 
@@ -230,11 +242,7 @@ const OrderCard = ({ order }) => {
         </Text>
         <View style={styles.row}>
           <Ionicons name="person-outline" size={16} />
-          {loadingCustomer ? (
-            <ActivityIndicator size="small" color="#0066CC" />
-          ) : (
-            <Text style={styles.label}>{customerName}</Text>
-          )}
+          <Text style={styles.label}>{customerName}</Text>
         </View>
         <View style={styles.row}>
           <Ionicons name="location-outline" size={16} />
@@ -277,7 +285,8 @@ const OrderCard = ({ order }) => {
             <Text style={styles.label}>{order.order.note}</Text>
           </View>
         )}
-        {order.order.status !== 6 && (
+        {/* Điều kiện hiển thị nút cập nhật khác nhau cho từng loại đơn hàng */}
+        {((isDeliveryOrder && order.order.status !== 6) || (!isDeliveryOrder && order.order.status !== 7)) && (
           <TouchableOpacity
             style={styles.updateButton}
             onPress={() => setModalVisible(true)}
