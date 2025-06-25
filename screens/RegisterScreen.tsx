@@ -21,7 +21,7 @@ const RegisterScreen = () => {
     }
 
     try {
-      const data = { name, email, phone, password };
+      const data = { name, email, phone, password, confirmPassword }; 
       const response = await signupUser(data);
       Alert.alert('Success', 'Registration successful');
       navigation.navigate('Login');

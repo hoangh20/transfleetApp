@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getCurrentOrdersByUserId } from '@/services/oder';
 import { Ionicons } from '@expo/vector-icons';
 import OrderCard from '@/components/OrderCard';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const CARD_PADDING = 16;
@@ -24,6 +25,7 @@ const filters = [
 ];
 
 const HomeScreen = () => {
+  const navigation = useNavigation();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(1);
@@ -39,12 +41,22 @@ const HomeScreen = () => {
       const user = userJson ? JSON.parse(userJson) : {};
       if (!user.id) {
         Alert.alert('Lỗi', 'Vui lòng đăng nhập lại.');
+        await AsyncStorage.removeItem('user');
+        await AsyncStorage.removeItem('access_token');
+        navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
         return;
       }
       const response = await getCurrentOrdersByUserId(user.id, filter);
       setOrders(response.data || []);
     } catch (error) {
-      Alert.alert('Lỗi', 'Không thể tải dữ liệu. Vui lòng thử lại.');
+      if (error?.response?.status === 401 || error?.response?.status === 404) {
+        Alert.alert('Phiên đăng nhập hết hạn', 'Vui lòng đăng nhập lại.');
+        await AsyncStorage.removeItem('user');
+        await AsyncStorage.removeItem('access_token');
+        navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+      } else {
+        Alert.alert('Lỗi', 'Không thể tải dữ liệu. Vui lòng thử lại.');
+      }
     } finally {
       setLoading(false);
     }
